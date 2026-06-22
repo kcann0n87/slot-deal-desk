@@ -57,6 +57,25 @@
   input:focus, select:focus{outline:2px solid var(--play); outline-offset:1px; border-color:transparent}
   input[type=range]{width:100%; accent-color:var(--play); height:26px}
 
+  /* searchable machine picker (combobox) */
+  .combo{position:relative}
+  .combo-input{width:100%; background:#0b1310; color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px; font-size:15px; font-family:inherit}
+  .combo-input::placeholder{color:var(--faint)}
+  .combo-input:focus{outline:2px solid var(--play); outline-offset:1px; border-color:transparent}
+  .combo-list{position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:40; max-height:340px;
+    overflow-y:auto; background:#0b1310; border:1px solid var(--line); border-radius:10px;
+    box-shadow:var(--shadow); display:none; -webkit-overflow-scrolling:touch}
+  .combo-list.open{display:block}
+  .combo-group{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint);
+    font-weight:600; padding:9px 12px 4px; position:sticky; top:0; background:#0b1310}
+  .combo-item{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px;
+    cursor:pointer; border-top:1px solid rgba(39,51,46,.5)}
+  .combo-item:hover, .combo-item.active{background:#131c19}
+  .combo-item .nm{font-size:14px; color:var(--text)}
+  .combo-item .tp{font-size:10px; color:var(--faint); white-space:nowrap}
+  .combo-empty{padding:12px; color:var(--muted); font-size:13px}
+
   .mech{display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap}
   .chip{display:inline-block; font-size:11px; font-weight:600; letter-spacing:.04em; padding:4px 9px; border-radius:999px;
     border:1px solid var(--line); color:var(--muted); background:#0b1310}
@@ -146,8 +165,13 @@
 
 <!-- PICKER -->
 <div class="card">
-  <label class="lbl" for="game">Machine</label>
-  <select id="game" aria-label="Select machine"></select>
+  <label class="lbl" for="gameSearch">Machine</label>
+  <div class="combo" id="combo">
+    <input type="text" id="gameSearch" class="combo-input" placeholder="Search machines, or tap to browse all…"
+      autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+      role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gameList" aria-label="Search machines">
+    <div class="combo-list" id="gameList" role="listbox"></div>
+  </div>
   <div class="mech" id="mechRow"></div>
   <div class="note" id="gameNote" style="margin-top:12px"></div>
 </div>
@@ -500,15 +524,51 @@ const num = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:1});
 
 let cur = GAMES[0];
 
+const TYPEPILL = g => ({counter:(g.trig==='fixed'?'count':'MHB'), dollar:'$ MHB', bank:'banking', trap:'trap', notbeatable:'not beatable'})[g.type];
+
 function buildPicker(){
-  const sel=$('game'); const groups={};
-  GAMES.forEach((g,i)=>{ (groups[g.grp]=groups[g.grp]||[]).push({g,i}); });
-  Object.keys(groups).forEach(grp=>{
-    const og=document.createElement('optgroup'); og.label=grp;
-    groups[grp].forEach(({g,i})=>{ const o=document.createElement('option'); o.value=i; o.textContent=g.name; og.appendChild(o); });
-    sel.appendChild(og);
+  const input=$('gameSearch'), list=$('gameList'), combo=$('combo');
+  let items=[];
+  const open =()=>{ list.classList.add('open'); input.setAttribute('aria-expanded','true'); };
+  const close=()=>{ list.classList.remove('open'); input.setAttribute('aria-expanded','false'); };
+  const syncInput=()=>{ input.value=cur.name; };
+
+  function render(q){
+    q=(q||'').trim().toLowerCase();
+    const groups={};
+    GAMES.forEach((g,i)=>{
+      const hay=(g.name+' '+(g.maker||'')+' '+g.grp+' '+(g.key||'')).toLowerCase();
+      if(q && !hay.includes(q)) return;
+      (groups[g.grp]=groups[g.grp]||[]).push({g,i});
+    });
+    list.innerHTML=''; items=[];
+    const keys=Object.keys(groups);
+    if(!keys.length){ const e=document.createElement('div'); e.className='combo-empty'; e.textContent='No machines match “'+q+'”.'; list.appendChild(e); return; }
+    keys.forEach(grp=>{
+      const gh=document.createElement('div'); gh.className='combo-group'; gh.textContent=grp; list.appendChild(gh);
+      groups[grp].forEach(({g,i})=>{
+        const it=document.createElement('div'); it.className='combo-item'; it.setAttribute('role','option'); it.dataset.i=i;
+        const nm=document.createElement('span'); nm.className='nm'; nm.textContent=g.name;
+        const tp=document.createElement('span'); tp.className='tp'; tp.textContent=TYPEPILL(g);
+        it.appendChild(nm); it.appendChild(tp);
+        it.addEventListener('mousedown',e=>{ e.preventDefault(); choose(i); });
+        list.appendChild(it); items.push(it);
+      });
+    });
+  }
+  function choose(i){ cur=GAMES[i]; syncInput(); close(); input.blur(); loadGame(); }
+  function move(d){ if(!items.length) return; let a=items.findIndex(x=>x.classList.contains('active')); items.forEach(x=>x.classList.remove('active')); a=(a<0?(d>0?0:items.length-1):(a+d+items.length)%items.length); items[a].classList.add('active'); items[a].scrollIntoView({block:'nearest'}); }
+
+  input.addEventListener('focus',()=>{ render(input.value===cur.name?'':input.value); open(); });
+  input.addEventListener('input',()=>{ render(input.value); open(); });
+  input.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){ move(1); e.preventDefault(); }
+    else if(e.key==='ArrowUp'){ move(-1); e.preventDefault(); }
+    else if(e.key==='Enter'){ const a=list.querySelector('.combo-item.active')||list.querySelector('.combo-item'); if(a) choose(+a.dataset.i); e.preventDefault(); }
+    else if(e.key==='Escape'){ syncInput(); close(); input.blur(); }
   });
-  sel.addEventListener('change',()=>{ cur=GAMES[+sel.value]; loadGame(); });
+  document.addEventListener('mousedown',e=>{ if(!combo.contains(e.target)){ if(list.classList.contains('open')) syncInput(); close(); } });
+  render('');
 }
 
 function setGrp(type){
@@ -519,6 +579,7 @@ function setGrp(type){
 
 function loadGame(){
   const g=cur;
+  const gs=$('gameSearch'); if(gs && document.activeElement!==gs) gs.value=g.name;
   // mech chips
   const mr=$('mechRow'); mr.innerHTML='';
   const typeLabel={counter:g.trig==='fixed'?'Count to trigger':'Counter · must-hit-by', dollar:'Dollar must-hit-by', bank:'Banking / vulture', trap:'Volatile / trap', notbeatable:'Not beatable'}[g.type];
