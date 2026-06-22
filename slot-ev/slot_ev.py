@@ -173,6 +173,17 @@ GAMES = [
          key="respin at 5 coin holders filled",
          note="Respin when all 5 holders fill. Highest bet resets with 3 already "
               "filled, so check higher bets. Accrual/feature estimated."),
+    dict(id="piggy-bankin", name="Piggy Bankin' (classic 3-reel)", maker="WMS",
+         type="counter", grp="Count to trigger",
+         reset=0, ceil=510, accr=3, units=18, rtp=90, trig="fixed",
+         key="bonus guaranteed by 510 coins / 9 pigs",
+         note="The genuine Piggy Bankin' advantage play (the old WMS 3-reel cabinet). "
+              "510 coins sit across 9 piggy banks with one random lucky coin; 3x wilds "
+              "deposit coins and the progressive is GUARANTEED before the coins "
+              "deplete, so it is a count-to-trigger. You read PIGS REMAINING (9 -> 0); "
+              "each pig is ~57 coins, so coins collected ~ (9 - pigs)*57. Heuristic: "
+              "past halfway is worth a look, 3 pigs or fewer = sit down. Accrual "
+              "(coins/spin) and progressive payout are estimates - verify."),
 
     # ===== DOLLAR MUST-HIT-BY =====
     dict(id="river-dragons", name="River Dragons / Fire Wolf 2 / Wolf Queen",
@@ -360,6 +371,23 @@ GAMES = [
           "can exploit. Not advantage-playable."),
     _myth("lock-it-link", "Lock It Link",
           "No exploitable persistent must-hit-by. Not advantage-playable."),
+    _myth("spooky-link", "Spooky Link",
+          "Aristocrat hold-and-spin Link game (Mo' Mummy family, Baron Portrait "
+          "cabinet) with Go Yeti / Vault free-spins. Mini & minor jackpots are FIXED "
+          "by denom; Grand/Major are standard random progressives, NOT must-hit-by, "
+          "and the hold-and-spin coins do not persist for the next player. No "
+          "trackable guaranteed trigger to exploit - same bucket as Lightning Link. "
+          "If the glass actually shows a 'MUST HIT BY' ceiling on the Major/Grand, "
+          "that one jackpot becomes a dollar-MHB play - send the reset & ceiling and "
+          "I'll add it."),
+    _myth("lock-it-piggy", "Lock It Link: Piggy Bankin' / Piggy N' More Bankin'",
+          "The MODERN linked hold-and-spin version (big GRAND/MAJOR progressives - "
+          "what you most often see now) - NOT the classic play. Piggy banks lock in "
+          "place and break open during free spins for credit prizes, but the trigger "
+          "is random, the linked progressives are not must-hit-by, and nothing "
+          "persists for the next player. Do not confuse it with the classic 3-reel "
+          "Piggy Bankin', which IS an advantage play (see the 'Piggy Bankin' classic "
+          "3-reel' entry)."),
 ]
 
 # ----------------------------------------------------------------------------
