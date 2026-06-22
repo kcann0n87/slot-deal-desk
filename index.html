@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slot Deal Desk — +EV Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c1311; --surface:#131c19; --surface2:#0f1714; --line:#27332e;
+    --text:#e9efeb; --muted:#86a094; --faint:#5c726a;
+    --play:#3fd07f; --thin:#edb24a; --pass:#ff6f5e; --gold:#cbab6b;
+    --shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1100px 600px at 80% -10%, rgba(63,208,127,.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(203,171,107,.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    padding:18px 16px 60px; max-width:760px; margin:0 auto;
+  }
+  .mono{font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace}
+
+  header.top{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:18px}
+  .brand{display:flex; align-items:baseline; gap:10px}
+  .brand h1{font-size:19px; font-weight:700; letter-spacing:-.02em; margin:0}
+  .brand .chip{margin:0}
+  .tag{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600}
+
+  .card{background:linear-gradient(180deg,var(--surface),var(--surface2)); border:1px solid var(--line);
+    border-radius:16px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px}
+
+  label.lbl{display:block; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:7px}
+
+  select, input[type=number]{
+    width:100%; background:#0b1310; color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px; font-size:15px; font-family:inherit;
+  }
+  select{appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%2386a094' stroke-width='1.6' fill='none'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:34px}
+  input[type=number]{font-family:"JetBrains Mono", monospace}
+  input:focus, select:focus{outline:2px solid var(--play); outline-offset:1px; border-color:transparent}
+  input[type=range]{width:100%; accent-color:var(--play); height:26px}
+
+  .mech{display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .chip{display:inline-block; font-size:11px; font-weight:600; letter-spacing:.04em; padding:4px 9px; border-radius:999px;
+    border:1px solid var(--line); color:var(--muted); background:#0b1310}
+  .chip.ok{color:var(--play); border-color:rgba(63,208,127,.35)}
+  .chip.warn{color:var(--thin); border-color:rgba(237,178,74,.35)}
+  .chip.bad{color:var(--pass); border-color:rgba(255,111,94,.3)}
+
+  /* Verdict hero */
+  .verdict{border-radius:16px; padding:18px 18px 16px; border:1px solid var(--line); position:relative; overflow:hidden}
+  .verdict.play{background:linear-gradient(180deg, rgba(63,208,127,.14), rgba(63,208,127,.04)); border-color:rgba(63,208,127,.4)}
+  .verdict.thin{background:linear-gradient(180deg, rgba(237,178,74,.13), rgba(237,178,74,.03)); border-color:rgba(237,178,74,.4)}
+  .verdict.pass{background:linear-gradient(180deg, rgba(255,111,94,.12), rgba(255,111,94,.03)); border-color:rgba(255,111,94,.4)}
+  .v-row{display:flex; align-items:flex-end; justify-content:space-between; gap:14px}
+  .v-call{font-size:34px; font-weight:700; letter-spacing:-.02em; line-height:1}
+  .play .v-call{color:var(--play)} .thin .v-call{color:var(--thin)} .pass .v-call{color:var(--pass)}
+  .v-ev{text-align:right}
+  .v-ev .num{font-size:30px; font-weight:700; line-height:1}
+  .play .v-ev .num{color:var(--play)} .thin .v-ev .num{color:var(--thin)} .pass .v-ev .num{color:var(--pass)}
+  .v-ev .cap{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:3px}
+  .v-sub{margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .stat{background:#0b1310; border:1px solid var(--line); border-radius:10px; padding:9px 11px}
+  .stat .k{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint)}
+  .stat .v{font-size:17px; font-weight:600; margin-top:2px}
+
+  /* Gauge */
+  .gauge-wrap{margin-top:16px}
+  .gauge-head{display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px}
+  .gauge{position:relative; height:16px; border-radius:999px; background:#0b1310; border:1px solid var(--line); overflow:hidden}
+  .gauge .evzone{position:absolute; top:0; bottom:0; background:linear-gradient(90deg, rgba(63,208,127,.25), rgba(63,208,127,.5))}
+  .gauge .be{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold)}
+  .gauge .cur{position:absolute; top:50%; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--text); border:2px solid var(--bg); box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+  .gauge-foot{display:flex; justify-content:space-between; font-size:10px; color:var(--faint); margin-top:6px; letter-spacing:.05em}
+  .gauge-foot .begold{color:var(--gold)}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .field{margin-bottom:13px}
+  .field .row{display:flex; align-items:center; gap:10px}
+  .field .row input[type=number]{max-width:110px; text-align:right}
+  .hint{font-size:11px; color:var(--faint); margin-top:6px; line-height:1.45}
+  .est{color:var(--thin); font-weight:600}
+
+  .note{font-size:13px; color:var(--muted); line-height:1.55; margin-top:4px}
+  .note b{color:var(--text); font-weight:600}
+
+  h2.sec{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600; margin:26px 4px 12px}
+
+  /* Reference table */
+  .tbl{width:100%; border-collapse:collapse; font-size:13px}
+  .tbl th{text-align:left; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); font-weight:600; padding:8px 9px; border-bottom:1px solid var(--line)}
+  .tbl td{padding:9px; border-bottom:1px solid rgba(39,51,46,.6); vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl .g{font-weight:600}
+  .tbl .num{font-family:"JetBrains Mono", monospace; font-size:12px; color:var(--muted); white-space:nowrap}
+  .pill{font-size:10px; padding:2px 7px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap}
+  .pill.c{color:var(--play); border-color:rgba(63,208,127,.3)}
+  .pill.b{color:#7fc4ff; border-color:rgba(127,196,255,.3)}
+  .pill.d{color:var(--gold); border-color:rgba(203,171,107,.3)}
+  .pill.t{color:var(--thin); border-color:rgba(237,178,74,.3)}
+  .pill.x{color:var(--pass); border-color:rgba(255,111,94,.3)}
+  .filter{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}
+  .filter input{flex:1; min-width:160px}
+
+  footer{margin-top:26px; font-size:11px; color:var(--faint); line-height:1.6}
+  footer b{color:var(--muted)}
+  a{color:var(--gold)}
+
+  @media (max-width:430px){
+    .v-call{font-size:28px} .v-ev .num{font-size:24px}
+    .grid2{grid-template-columns:1fr}
+    .v-sub{grid-template-columns:1fr 1fr}
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .v-call,.v-ev .num,.gauge .cur{transition:all .18s ease}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Slot Deal Desk</h1>
+    <span class="chip ok">+EV engine</span>
+  </div>
+  <span class="tag">advantage play</span>
+</header>
+
+<!-- PICKER -->
+<div class="card">
+  <label class="lbl" for="game">Machine</label>
+  <select id="game" aria-label="Select machine"></select>
+  <div class="mech" id="mechRow"></div>
+  <div class="note" id="gameNote" style="margin-top:12px"></div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" id="calcCard">
+  <div class="verdict pass" id="verdict">
+    <div class="v-row">
+      <div>
+        <div class="v-call" id="vCall">—</div>
+        <div class="mono" id="vEdge" style="font-size:12px;color:var(--muted);margin-top:6px">edge —</div>
+      </div>
+      <div class="v-ev">
+        <div class="cap">EV / session</div>
+        <div class="num mono" id="vEv">—</div>
+      </div>
+    </div>
+
+    <div class="v-sub">
+      <div class="stat"><div class="k" id="beK">Break-even meter</div><div class="v mono" id="vBe">—</div></div>
+      <div class="stat"><div class="k">Worst-case loss</div><div class="v mono" id="vLoss">—</div></div>
+    </div>
+
+    <div class="gauge-wrap" id="gaugeWrap">
+      <div class="gauge-head"><span id="gLeft">reset</span><span id="gRight">ceiling</span></div>
+      <div class="gauge"><div class="evzone" id="evZone"></div><div class="be" id="beMark"></div><div class="cur" id="curMark"></div></div>
+      <div class="gauge-foot"><span id="gFootL">—</span><span class="begold" id="gFootBe">break-even —</span><span id="gFootR">—</span></div>
+    </div>
+  </div>
+
+  <!-- INPUTS -->
+  <div style="margin-top:18px">
+    <!-- primary state -->
+    <div class="field" id="stateField">
+      <label class="lbl" id="stateLbl" for="stateNum">Current meter</label>
+      <div class="row">
+        <input type="range" id="stateRange">
+        <input type="number" id="stateNum" class="mono">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <!-- COUNTER group -->
+      <div class="field grp grp-counter">
+        <label class="lbl" for="resetN">Reset value</label>
+        <input type="number" id="resetN" class="mono">
+      </div>
+      <div class="field grp grp-counter">
+        <label class="lbl" for="ceilN">Must-hit-by ceiling</label>
+        <input type="number" id="ceilN" class="mono">
+      </div>
+      <div class="field grp grp-counter">
+        <label class="lbl" for="accrN">Accrual / spin</label>
+        <input type="number" id="accrN" class="mono" step="0.1">
+      </div>
+      <div class="field grp grp-counter">
+        <label class="lbl" for="unitsN">Avg feature payout (× bet)</label>
+        <input type="number" id="unitsN" class="mono" step="1">
+      </div>
+
+      <!-- DOLLAR group -->
+      <div class="field grp grp-dollar">
+        <label class="lbl" for="dCeil">Ceiling ($)</label>
+        <input type="number" id="dCeil" class="mono">
+      </div>
+      <div class="field grp grp-dollar">
+        <label class="lbl" for="dInc">Meter rise (% of coin-in)</label>
+        <input type="number" id="dInc" class="mono" step="0.1">
+      </div>
+
+      <!-- BANK group -->
+      <div class="field grp grp-bank">
+        <label class="lbl" for="bSpins">Spins to collect</label>
+        <input type="number" id="bSpins" class="mono">
+      </div>
+
+      <!-- SHARED -->
+      <div class="field">
+        <label class="lbl" for="betN">Bet / spin ($)</label>
+        <input type="number" id="betN" class="mono" step="0.5" value="5">
+      </div>
+      <div class="field">
+        <label class="lbl" for="rtpN">Base-game return (%)</label>
+        <input type="number" id="rtpN" class="mono" step="1" value="85">
+      </div>
+    </div>
+    <div class="hint" id="calcHint"></div>
+  </div>
+</div>
+
+<!-- NON-CALC card (trap / not beatable) -->
+<div class="card" id="infoCard" style="display:none">
+  <div class="verdict pass">
+    <div class="v-row"><div class="v-call" id="iCall">PASS</div></div>
+  </div>
+  <div class="note" id="iNote" style="margin-top:14px"></div>
+</div>
+
+<!-- REFERENCE -->
+<h2 class="sec">Full machine reference</h2>
+<div class="card">
+  <div class="filter">
+    <input type="search" id="search" placeholder="Filter machines…" aria-label="Filter machines">
+  </div>
+  <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr><th>Machine</th><th>Type</th><th>Key numbers</th></tr></thead>
+      <tbody id="refBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p><b>How the math works.</b> A persistent-state slot goes +EV only when someone has built the meter close enough to its guaranteed trigger that the feature you collect outweighs the base-game bleed getting there. Counter games: <span class="mono">EV = (feature × bet) − [(ceiling − meter) ÷ (2 × accrual)] × bet × (1 − base RTP)</span>. The break-even meter is where that hits zero.</p>
+  <p><b>Trust the structure, verify the constants.</b> Resets and ceilings here are the hard-to-find facts and are reliable. Only <b>Buffalo Link</b> ships fully calibrated (1.7 heads/spin, ~85% base return, 20–30 unit feature). For every other game the accrual and feature values load as <span class="est">estimates</span> — dial them to the real machine or a verified guide before trusting the number.</p>
+  <p><b>Reality check.</b> +EV is a long-run average; individual sessions swing hard and the feature often pays near zero. Need a bankroll that absorbs it, and the good states get locked up fast by other players. If a session drifts from "playing only +EV states" into "playing because I'm here," that's the stop-loss — walk. For informational use; verify every number yourself.</p>
+</footer>
+
+<script>
+const GAMES = [
+  // ===== CALIBRATED =====
+  {id:'buffalo-link', name:'Buffalo Link / Lightning Buffalo Link', maker:'Aristocrat', type:'counter', grp:'★ Calibrated',
+   reset:100, ceil:1800, accr:1.7, units:20, rtp:85, trig:'mhb', verified:true,
+   key:'reset 100 · MHB 1800 · ~1.7/spin',
+   note:'The one fully-calibrated game. Head counter resets to 100, feature must hit by 1800, heads accrue ~1.7/spin, feature averages 20–30× bet. Break-even lands ~1,230 (aggressive, 25-unit) to ~1,375 (safe, 20-unit). The "play over 1200" rule only holds at the highest bet / 25-unit assumption — below ~1,300 you are usually paying the house. Higher bet = higher RTP = slightly lower threshold.'},
+
+  // ===== COUNTER / MUST-HIT-BY =====
+  {id:'phoenix-link', name:'Phoenix Link', maker:'Aristocrat', type:'counter', grp:'Counter / must-hit-by',
+   reset:100, ceil:1888, accr:1.7, units:20, rtp:88, trig:'mhb',
+   key:'reset random 100–1500 · MHB 1888',
+   note:'Phoenix counter resets to a RANDOM value between 100 and 1500, must hit by 1888. Because resets can be high, the playable window near 1888 is narrow and rarely found. Accrual & feature values below are <span class="est">estimates</span> — verify.'},
+  {id:'regal-link', name:'Regal Link: Lion / Raven', type:'counter', grp:'Counter / must-hit-by',
+   reset:175, ceil:200, accr:1, units:15, rtp:88, trig:'mhb',
+   key:'5 tiers, e.g. diamond 175→200',
+   note:'Five accruing free-games wild tiers (MHB): amber 30→50, sapphire 40→60, amethyst 50→75, emerald 75→100, diamond 175→200. Preset shows the tightest (diamond) tier — change reset/ceiling to whichever tier you are tracking. Accrual/feature are <span class="est">estimates</span>.'},
+  {id:'rocket-rumble', name:'Rocket Rumble', type:'counter', grp:'Counter / must-hit-by',
+   reset:50, ceil:100, accr:1, units:12, rtp:88, trig:'mhb',
+   key:'tiers 8→15, 10→20, 20→35, 50→100',
+   note:'Four MHB free-games meters: blue 8→15, green 10→20, purple 20→35, red 50→100. Preset = red tier. Swap reset/ceiling per tier. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'stack-up', name:'Stack Up Pays / Ascending Fortunes', type:'counter', grp:'Counter / must-hit-by',
+   reset:250, ceil:350, accr:1, units:15, rtp:88, trig:'mhb',
+   key:'5 tiers, mega 250→350 … mini 75→125',
+   note:'Five MHB meters that add reel expansions: mini 75→125, minor 100→150, major 150→200, grand 200→250, mega 250→350. Preset = mega. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'regal-riches', name:'Regal Riches / Prosperity Pearl', maker:'IGT', type:'counter', grp:'Counter / must-hit-by',
+   reset:5, ceil:50, accr:0.4, units:8, rtp:88, trig:'mhb',
+   key:'blue wilds 5→50 · FG 75/100/125',
+   note:'Blue-wild counter (base game) resets to 5, MHB 50 — rare above 12, becomes strong the higher it climbs. Free-games tiers are MHB too: purple 75, green 100, yellow 125. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'golden-beasts', name:'Golden Beasts / Golden Elements', type:'counter', grp:'Counter / must-hit-by',
+   reset:0, ceil:180, accr:1, units:14, rtp:88, trig:'mhb',
+   key:'super-spin MHB by 180',
+   note:'Super-spin feature must hit by 180 collected symbols. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'jewel-collection', name:'Jewel Collection: Dragon / Vault', type:'counter', grp:'Counter / must-hit-by',
+   reset:0, ceil:777, accr:1, units:18, rtp:88, trig:'mhb',
+   key:'scatter meter MHB by 777',
+   note:'Mystery free-games scatter meter guaranteed by 777. Wild meters (amethyst/sapphire/emerald/ruby) are NOT must-hit-bys. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'treasure-shot', name:'Treasure Shot: Pirate Ship / Robin Hood', type:'counter', grp:'Counter / must-hit-by',
+   reset:0, ceil:100, accr:1, units:12, rtp:88, trig:'mhb',
+   key:'FG MHB blue 100 · green/purple 75 · bags hit by 10',
+   note:'Free-games chest wilds are MHB: blue 100, green 75, purple 75. Bag wilds guaranteed once 10 collected. Preset = blue chest. Accrual/feature <span class="est">estimated</span>.'},
+
+  // ===== COUNT TO TRIGGER (deterministic) =====
+  {id:'diamond-collector', name:'Diamond Collector: Wolfpack / Elite 7s', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:15, accr:0.6, units:10, rtp:88, trig:'fixed',
+   key:'free spins at 15 diamonds',
+   note:'Free spins trigger once 15 diamonds collected — deterministic, so play when most are already banked. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'hyper-orbs', name:'Hyper Orbs: King of the Seas / Dragon Sense', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:15, accr:0.6, units:10, rtp:88, trig:'fixed',
+   key:'free spins at 15 orbs',
+   note:'Bonus at 15 orbs collected. Same logic as Diamond Collector. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'lunar-disc', name:'Lunar Disc / Fortune Disc', maker:'Konami', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:6, accr:0.4, units:6, rtp:88, trig:'fixed',
+   key:'wild feature at 6 discs',
+   note:'Six discs collected → turns a random symbol fully wild. Short cycle. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'dragon-unleashed', name:'Dragon Unleashed', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:6, accr:0.5, units:8, rtp:88, trig:'fixed',
+   key:'hold & spin at 6 orbs',
+   note:'Six orbs (they shift down each spin) trigger hold & spin. Position of orbs matters too. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'power-push', name:'Power Push: Jin Gou / Long De Xiyue', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:300, accr:2, units:20, rtp:88, trig:'mhb',
+   key:'guaranteed push by 300 coins (12×25)',
+   note:'Push bonus guaranteed after 12 full stacks (300 coins). Accrual/feature <span class="est">estimated</span>.'},
+  {id:'treasure-hunter', name:'Treasure Hunter', maker:'IGT', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:3, accr:0.2, units:25, rtp:88, trig:'fixed',
+   key:'jackpot at 3 pearls (per tier)',
+   note:'Three pearls under a jackpot (mini/minor/maxi/major) awards it. Play when a jackpot sits at 2 pearls. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'golden-jungle', name:'Golden Jungle Grand', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:10, accr:1, units:8, rtp:88, trig:'fixed',
+   key:'10-spin cycle, 2 buddhas → wild reel',
+   note:'Ten-game cycle; reels holding two buddhas turn wild after spin 10. Value depends on buddhas already banked late in the cycle. Treat as a cycle play. Accrual/feature <span class="est">estimated</span>.'},
+  {id:'lucky-coin-link', name:'Lucky Coin Link: Asian Dreaming / Atlantica', type:'counter', grp:'Count to trigger',
+   reset:0, ceil:5, accr:0.4, units:7, rtp:88, trig:'fixed',
+   key:'respin at 5 coin holders filled',
+   note:'Respin when all 5 holders fill. Highest bet resets with 3 already filled, so check higher bets. Accrual/feature <span class="est">estimated</span>.'},
+
+  // ===== DOLLAR MUST-HIT-BY =====
+  {id:'river-dragons', name:'River Dragons / Fire Wolf 2 / Wolf Queen', maker:'AGS', type:'dollar', grp:'Dollar must-hit-by',
+   dcur:300, dceil:500, dinc:1.0, rtp:90,
+   key:'MHB jackpots $500 and $5,000',
+   note:'Two dollar MHB jackpots: $500 and $5,000 ceilings. The $500 is the practical play. You need the meter <b>increment rate</b> (meter $ per $ coin-in) — it is hidden, so the % below is an <span class="est">estimate</span>. Rule of thumb without it: play only in the top ~10–15% of the reset→ceiling band.'},
+  {id:'igt-classic', name:'IGT Classic Hits: Coyote Moon / Money Storm / Lobstermania Dlx', maker:'IGT', type:'dollar', grp:'Dollar must-hit-by',
+   dcur:0, dceil:0, dinc:1.0, rtp:90,
+   key:'3 MHB progressives × 5 bet levels',
+   note:'Each title has top/middle/bottom MHB progressives across 5 bet levels (15 total). Read the posted reset & ceiling for the specific bet level, enter both, and supply the increment rate. All values here are placeholders.'},
+  {id:'g-plus', name:'G+ Deluxe style two-tier MHB', type:'dollar', grp:'Dollar must-hit-by',
+   dcur:35, dceil:50, dinc:0.6, rtp:90,
+   key:'e.g. $25→$50 and $50→$500',
+   note:'Classic two-tier MHB layout (one jackpot ~$25 must-hit-by $50, another ~$50 must-hit-by $500). Penny-slow meters. Increment is an <span class="est">estimate</span> — confirm before trusting EV.'},
+
+  // ===== BANKING / VULTURE STATE =====
+  bank('ocean-magic','Ocean Magic / Ocean Magic Grand','IGT','wild bubbles rise 1 row/spin',
+    'Play only when the prior player left wild bubbles in the bottom rows (or just below the screen) so they rise into Ocean Magic symbols within a few spins. Estimate the credits those near-hits are worth and how many spins to cash them.'),
+  bank('big-ocean','Big Ocean Jackpots',null,'jackpot/wild bubbles rise 1/spin',
+    'Like Ocean Magic but with jackpot bubbles. Rich state = a jackpot or wild bubble one or two rows below a coin symbol. Value the imminent hit vs spins to reach it.'),
+  bank('pillars','Pillars of Cash: Celestial / Festive Fortune',null,'tall pillars + gold dragon',
+    'Each reel pillar holds a credit prize and a 3-spin life. A tall pillar (gold dragon lit) about to be awarded is the play; a low pillar resets and is worthless. Collect = prize on the pillar; cost = spins to land the coin.'),
+  bank('aztec-vault','Aztec Vault / Cleopatra\u2019s Vault',null,'near-full coin columns',
+    'Columns above the reels fill with coin prizes; a full column pays out then clears the whole board. A nearly-full high-value column left behind is the play.'),
+  bank('sumo-kitty','Sumo Kitty / Lucha Kitty',null,'connected gold frames',
+    'Gold frames lock in place; a coin landing in a frame pays the total of all connected frames. A big connected cluster of frames left on the board is the play — collect within a spin or two before they clear.'),
+  bank('block-bonanza','Block Bonanza: Hawaii / Rio',null,'high block credit values',
+    'Credit blocks sit above each reel and pay when dollar symbols line up below. Play when the block values are far above typical. Value = blocks you can realistically collect.'),
+  bank('prize-pool','Prize Pool: Cactus Cash / Fierce Dragon',null,'high block credit values',
+    'Same idea as Block Bonanza — colored blocks pay when 4+ scatters land. Rich = unusually high block values.'),
+  bank('crackin-cash','Crackin\u2019 Cash',null,'high balloons near top + jackpot balloons',
+    'Balloons float up each spin; rockets award them. Play when high-value or jackpot balloons sit near the top, about to be awarded or pushed off.'),
+  bank('temple-falls','Temple Falls',null,'rich coin grid (red 12.5x+)',
+    '5×7 coin grid drains over coin-collect features and ALL coins eventually pay. A grid loaded with red (12.5x+) coins or a wheel coin is the play. Value the grid total vs spins to drain it.'),
+  bank('wof4d-ce','Wheel of Fortune 4D Collector\u2019s Edition',null,'high prize above a reel',
+    'Each reel grows a credit prize; a Collect symbol awards it. A reel with a large built-up prize left behind is the play.'),
+  bank('dragon-crosslink','Dragon Spin CrossLink: Air/Earth/Fire/Water',null,'full gold bags',
+    'Five bags fill with gold; fuller bags add bigger credit prizes when Dragon Spin triggers. Play when bags are well-filled (the trigger itself is random, so weigh volatility).'),
+  bank('cash-falls','Cash Falls: Huo Zhu / Pirate\u2019s Trove / Island Bounty',null,'coins on reels w/ 3-spin counter',
+    'Coins land with a 3-spin counter; fill a reel before it expires to win all its coins. A reel mostly filled with coins and fresh spins left is the play.'),
+  bank('uflcf','Ultimate Fire Link Cash Falls: China / Olvera Street',null,'fireballs on reels w/ 3-spin counter',
+    'Same coin-counter mechanic as Cash Falls, plus a Fire Link trigger fireball. Mostly-filled reel with spins remaining (especially holding the trigger fireball) is the play.'),
+  bank('wof4d','Wheel of Fortune 4D',null,'1 of 2 dollar symbols collected',
+    'Two dollar symbols fill a holder and turn a reel wild for 2 spins. A reel sitting at 1 of 2 left behind is a small, cheap edge.'),
+  bank('golden-egypt','Golden Egypt Grand',null,'coin holder near full',
+    'Fill a coin holder → that reel goes wild for 2–4 spins. A nearly-full holder is the play.'),
+  bank('red-silk','Red Silk / Aztec Chief',null,'1 of 2 coins collected',
+    'Two coins fill a holder → reel wild for 2 spins. Reel at 1 of 2 left behind = cheap edge.'),
+  bank('joe-blow','Joe Blow Diamonds / Gold',null,'2 of 3 dynamite collected',
+    'Three dynamite sticks → reel wild for 3 spins. A reel at 2 of 3 (or several reels loaded) left behind is the play.'),
+  bank('lucky-empress','Lucky Empress / Inca Empress',null,'high multipliers queued',
+    'Multipliers (up to 12x) queue on the left of each row and apply to the next line hit. A row with a high multiplier already active / queued is the play.'),
+  bank('grand-buddha','Grand Buddha Link / Grand Cat Link',null,'persistent 5x/6x/8x multipliers active',
+    'Line-hit symbols become multipliers (up to 8x) that persist 8 spins. Sitting down with strong left-side multipliers still live is the edge.'),
+  bank('frankenstein','Frankenstein','IGT','high multipliers on jackpot prizes',
+    'Power-Up symbols add multipliers to the prizes above; It\u2019s Alive awards them. Play when big multipliers sit on the larger prizes. Multipliers reset after the feature.'),
+  bank('diamonds-devils','Diamonds & Devils Dlx / Jade Monkey Dlx',null,'2-of-3 diamonds + built prizes (removal risk)',
+    'Prizes build above reels; 3 diamonds award them — BUT a devil/jade symbol removes a diamond and can reset the reel. High built value + 2 diamonds is the play, with reset risk priced in.'),
+  bank('magic-nile','Magic of the Nile',null,'obelisk at 2 of 3 segments',
+    'Three obelisks each need 3 segments to trigger a bonus. An obelisk at 2 of 3 left behind is the play.'),
+  bank('scarab','Scarab / Diamond Mania','Konami','10-spin cycle collecting scarabs',
+    'The classic clean play: a fixed 10-spin cycle collects scarabs, then they pay/expand. Cost to finish a cycle is KNOWN before you bet. Play when enough scarabs are banked with few spins left in the cycle. Enter the value you expect to collect and spins remaining.'),
+  bank('ultra-rush','Ultra Rush Gold: African Adventure / Mythical Phoenix / Tiger Run',null,'scatters near 6 (3-spin lock)',
+    'Six locked scatters trigger the bonus; each new scatter resets a 3-spin lock. Several scatters already locked with spins remaining is the play.'),
+  bank('cash-cano','Cash Cano: Roman Riches / Tiki',null,'gems toward unlocked jackpot rows',
+    'Hold-and-spin collects gems toward four jackpot rows. State value depends on gems banked toward unlocked rows.'),
+  bank('bc-cruise','Brian Christopher\u2019s World Cruise',null,'fat ducks (high bonus meters)',
+    'Three duck bonuses fatten as scatters land; a fatter duck pays better when triggered. Play the fattest ducks.'),
+  {id:'super-bowl', name:'Super Bowl Jackpots', type:'bank', grp:'Banking / vulture state',
+   bspins:4, rtp:88, key:'2-min drill every 22/24/26 min; prizes persist',
+   note:'A bank-wide 2-Minute Drill fires every 22–26 minutes. The drill itself is not +EV, but collected prizes PERSIST after it ends — a machine left with banked prizes is the play. Time the drill and grab abandoned banks.'},
+
+  // ===== VOLATILE / AP TRAP =====
+  trap('dragon-lights','Dragon Lights: Fortune Skies / Mystical Falls',
+    'Four free-games meters that are NOT must-hit-bys — triggers are fully random. Extremely volatile; only deep-bankroll APs, and even then it is closer to gambling than a clean edge.'),
+  trap('life-of-luxury','Life of Luxury Hot Diamonds',
+    'Car/boat/plane free-games meters with random (non-MHB) triggers. Dangerous and volatile — easy to misread as a play when it is not.'),
+  trap('raise-sails','Raise the Sails / San Xing Riches',
+    'Bronze/silver/gold meters with random triggers (no MHB). High variance, no guaranteed hit point — not a clean play.'),
+  trap('rich-piggies','Rich Little Piggies: Hog Wild / Meal Ticket',
+    'Pigs fatten as features build, but triggers are random, not must-hit-by. A fatter pig is NOT closer to hitting — classic trap.'),
+  trap('azure-dragon','Azure Dragon / Emerald Guardian',
+    'Four free-games meters with random triggers (not MHB). Looks like a play, isn\u2019t a guaranteed one.'),
+  trap('fu-dai','Fu Dai Lian Lian: Boost Peacock / Boost Tiger',
+    'Bags fill and "boost" the bonus, but fuller bags do NOT make the bonus closer to hitting. The boost only improves the bonus IF it hits. Trap.'),
+  trap('captain-riches','Captain Riches / Tiki Fortune / Mine Blast',
+    'Coin-holder wild mechanic that the source itself flags as a borderline AP trap. Understand the exact rules before risking anything.'),
+  trap('magic-treasures','Magic Treasures: Dragon / Tiger',
+    'Money Balls accumulate but the feature triggers RANDOMLY (counter resets to 5). Not a must-hit-by.'),
+  trap('bustin-money','Bustin\u2019 Money',
+    'Three safes build features, but a fatter safe is NOT more likely to trigger. Build state is cosmetic for trigger odds — caution.'),
+
+  // ===== NOT BEATABLE (myth-buster) =====
+  myth('lightning-link','Lightning Link (standard)',
+    'No trackable must-hit-by on the playable tiers. Fast-tapping, denom-switching, "it\u2019s due" are all myths. Not advantage-playable. (Buffalo Link and Scarab Link are the beatable cousins.)'),
+  myth('dragon-link','Dragon Link',
+    'No must-hit-by thresholds on any version; Major caps at ~2× its start. Hitting the Major/Grand is pure luck — not advantage-playable.'),
+  myth('dollar-storm','Dollar Storm',
+    'Adds a Super Grand Chance but still no trackable guaranteed trigger you can exploit. Not advantage-playable.'),
+  myth('lock-it-link','Lock It Link',
+    'No exploitable persistent must-hit-by. Not advantage-playable.'),
+];
+
+function bank(id,name,maker,key,note){return {id,name,maker:maker||null,type:'bank',grp:'Banking / vulture state',bspins:3,rtp:88,key,note};}
+function trap(id,name,note){return {id,name,type:'trap',grp:'Volatile / AP trap',key:'random trigger — no guaranteed hit',note};}
+function myth(id,name,note){return {id,name,type:'notbeatable',grp:'Not advantage-playable',key:'no trackable MHB',note};}
+
+// ---------- engines ----------
+function evCounter(g, st){
+  const M=+g.ceil, V=Math.min(+st, M), a=+g.accr, U=+g.units, r=+g.rtp/100, b=+g.bet;
+  const climb = Math.max(M - V, 0);
+  const div = (g.trig==='fixed') ? 1 : 2;            // fixed trigger = full climb; MHB = midpoint
+  const expSpins = climb/(div*a);
+  const expCoin = expSpins*b;
+  const bleed = expCoin*(1-r);
+  const feature = U*b;
+  const ev = feature - bleed;
+  const be = M - (div*a*U)/(1-r);                     // break-even meter (bet-independent)
+  const worstSpins = climb/a;
+  const worstLoss = -(worstSpins*b*(1-r));
+  const edge = expCoin>0 ? ev/expCoin : 0;
+  return {ev, be, worstLoss, edge, expCoin, gauge:{lo:+g.reset, hi:M, cur:V, be}};
+}
+function evDollar(g, st){
+  const M=+g.dceil, V=Math.min(+st,M), inc=+g.dinc/100, r=+g.rtp/100, b=+g.bet;
+  const climb=Math.max(M-V,0);
+  const expCoin = inc>0 ? climb/(2*inc) : 0;
+  const bleed = expCoin*(1-r);
+  const jp = (V+M)/2;
+  const ev = jp - bleed;
+  const k = inc>0 ? (1-r)/inc : 0;
+  const be = (k+1)!==0 ? M*(k-1)/(k+1) : M;
+  const worstLoss = -((inc>0?climb/inc:0)*(1-r));
+  const edge = expCoin>0 ? ev/expCoin : 0;
+  return {ev, be, worstLoss, edge, expCoin, gauge:{lo:0, hi:M, cur:V, be}};
+}
+function evBank(g, st){
+  const C=+st, s=+g.bspins, b=+g.bet, r=+g.rtp/100;
+  const cost = s*b*(1-r);
+  const ev = C - cost;
+  const edge = (s*b)>0 ? ev/(s*b) : 0;
+  return {ev, be:cost, worstLoss:-(s*b*(1-r)), edge, expCoin:s*b, gauge:null};
+}
+
+// ---------- ui ----------
+const $ = id => document.getElementById(id);
+const fmt = (n,d=0)=> (n<0?'-':'') + '$' + Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+const num = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:1});
+
+let cur = GAMES[0];
+
+function buildPicker(){
+  const sel=$('game'); const groups={};
+  GAMES.forEach((g,i)=>{ (groups[g.grp]=groups[g.grp]||[]).push({g,i}); });
+  Object.keys(groups).forEach(grp=>{
+    const og=document.createElement('optgroup'); og.label=grp;
+    groups[grp].forEach(({g,i})=>{ const o=document.createElement('option'); o.value=i; o.textContent=g.name; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  sel.addEventListener('change',()=>{ cur=GAMES[+sel.value]; loadGame(); });
+}
+
+function setGrp(type){
+  document.querySelectorAll('.grp-counter').forEach(e=>e.style.display = type==='counter'?'':'none');
+  document.querySelectorAll('.grp-dollar').forEach(e=>e.style.display = type==='dollar'?'':'none');
+  document.querySelectorAll('.grp-bank').forEach(e=>e.style.display = type==='bank'?'':'none');
+}
+
+function loadGame(){
+  const g=cur;
+  // mech chips
+  const mr=$('mechRow'); mr.innerHTML='';
+  const typeLabel={counter:g.trig==='fixed'?'Count to trigger':'Counter · must-hit-by', dollar:'Dollar must-hit-by', bank:'Banking / vulture', trap:'Volatile / trap', notbeatable:'Not beatable'}[g.type];
+  const chipCls = (g.type==='trap'||g.type==='notbeatable')?'chip bad':(g.type==='bank'?'chip warn':'chip ok');
+  mr.insertAdjacentHTML('beforeend',`<span class="${chipCls}">${typeLabel}</span>`);
+  if(g.maker) mr.insertAdjacentHTML('beforeend',`<span class="chip">${g.maker}</span>`);
+  mr.insertAdjacentHTML('beforeend', g.verified?`<span class="chip ok">calibrated</span>`:(g.type==='counter'||g.type==='dollar'||g.type==='bank')?`<span class="chip warn">verify constants</span>`:'');
+  $('gameNote').innerHTML = g.note;
+
+  if(g.type==='trap'||g.type==='notbeatable'){
+    $('calcCard').style.display='none'; $('infoCard').style.display='';
+    $('iCall').textContent = g.type==='notbeatable'?'NOT BEATABLE':'PASS';
+    $('iNote').innerHTML = g.note;
+    return;
+  }
+  $('calcCard').style.display=''; $('infoCard').style.display='none';
+  setGrp(g.type);
+
+  // shared
+  $('rtpN').value = g.rtp;
+  if(!$('betN').value) $('betN').value = 5;
+
+  if(g.type==='counter'){
+    $('stateLbl').textContent = g.trig==='fixed' ? 'Current collected' : 'Current meter';
+    $('beK').textContent='Break-even meter';
+    $('resetN').value=g.reset; $('ceilN').value=g.ceil; $('accrN').value=g.accr; $('unitsN').value=g.units;
+    const mid=Math.round((g.reset + g.ceil)/2);
+    setState(g.reset, g.ceil, Math.max(mid, Math.round(g.reset+(g.ceil-g.reset)*0.7)));
+    $('calcHint').innerHTML = g.verified ? 'Calibrated defaults loaded. Adjust bet & base return to your machine.' : 'Reset & ceiling are reliable. <span class="est">Accrual and feature payout are estimates</span> — set them from the real machine or a verified guide.';
+  } else if(g.type==='dollar'){
+    $('stateLbl').textContent='Current jackpot ($)';
+    $('beK').textContent='Break-even value';
+    $('dCeil').value=g.dceil; $('dInc').value=g.dinc;
+    setState(0, g.dceil||1000, g.dcur||0);
+    $('calcHint').innerHTML='Enter the posted ceiling. The meter increment (% of coin-in) is usually hidden — the default is an <span class="est">estimate</span>. Without it, play only the top ~10–15% of the band.';
+  } else if(g.type==='bank'){
+    $('stateLbl').textContent='Value you expect to collect ($)';
+    $('beK').textContent='Cost to collect';
+    $('bSpins').value=g.bspins;
+    setState(0, 500, 80);
+    $('calcHint').innerHTML='Estimate the credit value left on the board that you can realistically collect, and how many spins it takes. Edge = abandoned value minus the bleed to grab it.';
+  }
+  recompute();
+}
+
+function setState(lo,hi,val){
+  const rng=$('stateRange'), n=$('stateNum');
+  rng.min=lo; rng.max=hi; rng.step = (hi-lo)>40?1:0.5; rng.value=val; n.value=val;
+}
+
+function recompute(){
+  const g=cur; if(g.type==='trap'||g.type==='notbeatable') return;
+  g.bet=+$('betN').value||0; g.rtp=+$('rtpN').value||0;
+  let res, st=+$('stateNum').value||0;
+  if(g.type==='counter'){ g.reset=+$('resetN').value; g.ceil=+$('ceilN').value; g.accr=+$('accrN').value; g.units=+$('unitsN').value; res=evCounter(g,st); }
+  else if(g.type==='dollar'){ g.dceil=+$('dCeil').value; g.dinc=+$('dInc').value; res=evDollar(g,st); }
+  else { g.bspins=+$('bSpins').value; res=evBank(g,st); }
+  render(res);
+}
+
+function render(r){
+  const v=$('verdict');
+  let cls,call;
+  if(r.ev>0 && r.edge>=0.02){cls='play';call='PLAY';}
+  else if(r.ev>0){cls='thin';call='THIN EDGE';}
+  else {cls='pass';call='PASS';}
+  v.className='verdict '+cls;
+  $('vCall').textContent=call;
+  $('vEv').textContent=(r.ev>=0?'+':'−')+'$'+Math.abs(r.ev).toLocaleString('en-US',{maximumFractionDigits:Math.abs(r.ev)<100?2:0});
+  $('vEdge').textContent='edge '+(r.edge>=0?'+':'−')+Math.abs(r.edge*100).toFixed(1)+'%';
+  $('vBe').textContent = cur.type==='bank' ? fmt(r.be,2) : num(Math.round(r.be));
+  $('vLoss').textContent = fmt(r.worstLoss, Math.abs(r.worstLoss)<100?2:0);
+
+  // gauge
+  const gw=$('gaugeWrap');
+  if(cur.type==='bank' || !r.gauge){ gw.style.display='none'; return; }
+  gw.style.display='';
+  const {lo,hi,cur:c,be}=r.gauge;
+  const span=hi-lo || 1;
+  const pct=x=>Math.max(0,Math.min(100,((x-lo)/span)*100));
+  const bePct=Math.max(0,Math.min(100,pct(be)));
+  $('evZone').style.left=bePct+'%'; $('evZone').style.width=(100-bePct)+'%';
+  $('beMark').style.left=bePct+'%';
+  $('curMark').style.left=pct(c)+'%';
+  $('gLeft').textContent='reset'; $('gRight').textContent='ceiling';
+  $('gFootL').textContent=num(lo); $('gFootR').textContent=num(hi);
+  $('gFootBe').textContent='break-even '+num(Math.round(be));
+}
+
+// reference table
+function buildRef(){
+  const tb=$('refBody');
+  const pillCls={counter:'c',dollar:'d',bank:'b',trap:'t',notbeatable:'x'};
+  const pillTxt={counter:'counter',dollar:'$ MHB',bank:'banking',trap:'trap',notbeatable:'not beatable'};
+  GAMES.forEach((g)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="g">${g.name}</span>${g.maker?`<br><span style="color:var(--faint);font-size:11px">${g.maker}</span>`:''}</td>
+      <td><span class="pill ${pillCls[g.type]}">${pillTxt[g.type]}</span></td>
+      <td class="num">${g.key}</td>`;
+    tb.appendChild(tr);
+  });
+  $('search').addEventListener('input',e=>{
+    const q=e.target.value.toLowerCase();
+    [...tb.children].forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q)?'':'none'; });
+  });
+}
+
+// wire inputs
+['stateNum','resetN','ceilN','accrN','unitsN','dCeil','dInc','bSpins','betN','rtpN'].forEach(id=>{
+  document.addEventListener('input',e=>{ if(e.target && e.target.id===id) { if(id==='stateNum'){$('stateRange').value=e.target.value;} recompute(); } });
+});
+$('stateRange').addEventListener('input',e=>{ $('stateNum').value=e.target.value; recompute(); });
+
+buildPicker();
+buildRef();
+loadGame();
+</script>
+</body>
+</html>
