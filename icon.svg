@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0c1311"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#27332e" stroke-width="6"/>
+  <!-- break-even line -->
+  <line x1="96" y1="356" x2="416" y2="356" stroke="#cbab6b" stroke-width="8" stroke-dasharray="2 18" stroke-linecap="round"/>
+  <!-- +EV upward mark -->
+  <path d="M256 120 L392 332 L120 332 Z" fill="#3fd07f"/>
+  <path d="M256 196 L336 320 L176 320 Z" fill="#0c1311"/>
+  <circle cx="256" cy="300" r="20" fill="#3fd07f"/>
+</svg>
