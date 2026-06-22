@@ -1,0 +1,14 @@
+{
+  "name": "Slot Deal Desk",
+  "short_name": "Deal Desk",
+  "description": "Math-only +EV calculator for persistent-state slot machines.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c1311",
+  "theme_color": "#0c1311",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
