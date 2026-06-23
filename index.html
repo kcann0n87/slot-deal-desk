@@ -81,6 +81,7 @@
     border:1px solid var(--line); color:var(--muted); background:#0b1310}
   .chip.ok{color:var(--play); border-color:rgba(63,208,127,.35)}
   .chip.warn{color:var(--thin); border-color:rgba(237,178,74,.35)}
+  .chip.src{color:#7fc4ff; border-color:rgba(127,196,255,.35)}
   .chip.bad{color:var(--pass); border-color:rgba(255,111,94,.3)}
 
   /* Verdict hero */
@@ -463,8 +464,9 @@ const GAMES = [
     'Prizes build above reels; 3 diamonds award them — BUT a devil/jade symbol removes a diamond and can reset the reel. High built value + 2 diamonds is the play, with reset risk priced in.'),
   bank('magic-nile','Magic of the Nile',null,'obelisk at 2 of 3 segments',
     'Three obelisks each need 3 segments to trigger a bonus. An obelisk at 2 of 3 left behind is the play.'),
-  bank('scarab','Scarab / Diamond Mania','Konami','10-spin cycle collecting scarabs',
-    'The classic clean play: a fixed 10-spin cycle collects scarabs, then they pay/expand. Cost to finish a cycle is KNOWN before you bet. Play when enough scarabs are banked with few spins left in the cycle. Enter the value you expect to collect and spins remaining.'),
+  {id:'scarab', name:'Scarab (IGT)', maker:'IGT', type:'bank', grp:'Banking / vulture state', bspins:3, rtp:96, cal:'sourced',
+   key:'10-spin cycle, wilds lock & pay on spin 10',
+   note:'The model advantage play (IGT, ~96% base return). A fixed 10-spin cycle: every scarab that lands gets a gold border and locks, and on spin 10 all gold-bordered positions turn WILD and pay. It pays left-to-right, so locked scarabs on the LEFT reels are worth most. The play: sit at a machine someone abandoned with lots of gold borders and few spins remaining (the counter shows X of 10) — you know the exact cost up front (remaining spins × bet) and the high base return makes the bleed tiny. Enter the credit value you expect the spin-10 wilds to pay and the spins left in the cycle. <span class="est">Sourced from published AP analysis</span>; the per-position value still depends on the board you find.'},
   bank('ultra-rush','Ultra Rush Gold: African Adventure / Mythical Phoenix / Tiger Run',null,'scatters near 6 (3-spin lock)',
     'Six locked scatters trigger the bonus; each new scatter resets a 3-spin lock. Several scatters already locked with spins remaining is the play.'),
   bank('cash-cano','Cash Cano: Roman Riches / Tiki',null,'gems toward unlocked jackpot rows',
@@ -624,7 +626,11 @@ function loadGame(){
   const chipCls = (g.type==='trap'||g.type==='notbeatable')?'chip bad':(g.type==='bank'?'chip warn':'chip ok');
   mr.insertAdjacentHTML('beforeend',`<span class="${chipCls}">${typeLabel}</span>`);
   if(g.maker) mr.insertAdjacentHTML('beforeend',`<span class="chip">${g.maker}</span>`);
-  mr.insertAdjacentHTML('beforeend', g.verified?`<span class="chip ok">calibrated</span>`:(g.type==='counter'||g.type==='dollar'||g.type==='bank')?`<span class="chip warn">verify constants</span>`:'');
+  const lvl = g.verified ? 'floor' : (g.cal || 'estimate');
+  const calChip = lvl==='floor' ? '<span class="chip ok">calibrated</span>'
+                : lvl==='sourced' ? '<span class="chip src">sourced</span>'
+                : (g.type==='counter'||g.type==='dollar'||g.type==='bank') ? '<span class="chip warn">verify constants</span>' : '';
+  mr.insertAdjacentHTML('beforeend', calChip);
   $('gameNote').innerHTML = g.note;
 
   if(g.type==='trap'||g.type==='notbeatable'){
@@ -646,7 +652,7 @@ function loadGame(){
     $('resetN').value=g.reset; $('ceilN').value=g.ceil; $('accrN').value=g.accr; $('unitsN').value=g.units;
     const mid=Math.round((g.reset + g.ceil)/2);
     setState(g.reset, g.ceil, Math.max(mid, Math.round(g.reset+(g.ceil-g.reset)*0.7)));
-    $('calcHint').innerHTML = g.verified ? 'Calibrated defaults loaded. Adjust bet & base return to your machine.' : 'Reset & ceiling are reliable. <span class="est">Accrual and feature payout are estimates</span> — set them from the real machine or a verified guide.';
+    $('calcHint').innerHTML = lvl==='floor' ? 'Calibrated defaults loaded. Adjust bet & base return to your machine.' : lvl==='sourced' ? 'Constants from published AP analysis — better than a placeholder; tune bet & base return to your machine.' : 'Reset & ceiling are reliable. <span class="est">Accrual and feature payout are estimates</span> — set them from the real machine or a verified guide.';
   } else if(g.type==='dollar'){
     $('stateLbl').textContent='Current jackpot ($)';
     $('beK').textContent='Break-even value';

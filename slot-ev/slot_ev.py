@@ -315,12 +315,19 @@ GAMES = [
     _bank("magic-nile", "Magic of the Nile", None, "obelisk at 2 of 3 segments",
           "Three obelisks each need 3 segments to trigger a bonus. An obelisk at 2 of "
           "3 left behind is the play."),
-    _bank("scarab", "Scarab / Diamond Mania", "Konami",
-          "10-spin cycle collecting scarabs",
-          "The classic clean play: a fixed 10-spin cycle collects scarabs, then they "
-          "pay/expand. Cost to finish a cycle is KNOWN before you bet. Play when "
-          "enough scarabs are banked with few spins left in the cycle. Enter the "
-          "value you expect to collect and spins remaining."),
+    dict(id="scarab", name="Scarab (IGT)", maker="IGT", type="bank",
+         grp="Banking / vulture state", bspins=3, rtp=96, cal="sourced",
+         key="10-spin cycle, wilds lock & pay on spin 10",
+         note="The model advantage play (IGT, ~96% base return). A fixed 10-spin "
+              "cycle: every scarab that lands gets a gold border and locks, and on "
+              "spin 10 all gold-bordered positions turn WILD and pay. It pays "
+              "left-to-right, so locked scarabs on the LEFT reels are worth most. The "
+              "play: sit at a machine someone abandoned with lots of gold borders and "
+              "few spins remaining (the counter shows X of 10) - you know the exact "
+              "cost up front (remaining spins x bet) and the high base return makes the "
+              "bleed tiny. Enter the credit value you expect the spin-10 wilds to pay "
+              "and the spins left in the cycle. Sourced from published AP analysis; the "
+              "per-position value still depends on the board you actually find."),
     _bank("ultra-rush",
           "Ultra Rush Gold: African Adventure / Mythical Phoenix / Tiger Run", None,
           "scatters near 6 (3-spin lock)",
@@ -514,6 +521,14 @@ CAL_BANNER = ("  * CALIBRATED - constants validated against real floor data.")
 VERIFY_BANNER = ("  ! VERIFY: reset & ceiling are reliable, but accrual & feature "
                  "payout are\n    ESTIMATES. Treat the break-even as a placeholder "
                  "until you dial them in.")
+SOURCED_BANNER = ("  ~ SOURCED: constants come from published AP analysis, not this "
+                  "exact machine.\n    Better than a placeholder, shy of a full floor "
+                  "calibration - tune base return & bet to your game.")
+
+def cal_level(g):
+    if g.get("verified"):
+        return "floor"
+    return g.get("cal", "estimate")
 
 def type_label(g):
     return {
@@ -536,8 +551,8 @@ def state_label(g):
 # ----------------------------------------------------------------------------
 
 def header_line(g):
-    tags = [t for t in (g.get("maker"), type_label(g),
-                        "CALIBRATED" if g.get("verified") else None) if t]
+    cal = {"floor": "CALIBRATED", "sourced": "SOURCED"}.get(cal_level(g))
+    tags = [t for t in (g.get("maker"), type_label(g), cal) if t]
     return "{}  [{}]".format(g["name"], " - ".join(tags))
 
 def render_report(g, st, bet, res):
@@ -565,8 +580,11 @@ def render_report(g, st, bet, res):
         lines.append("  worst-case loss  {}".format(
             fmt(res["worst_loss"], 2 if abs(res["worst_loss"]) < 100 else 0)))
         lines.append("")
-        if g.get("verified"):
+        lvl = cal_level(g)
+        if lvl == "floor":
             lines.append(CAL_BANNER)
+        elif lvl == "sourced":
+            lines.append(SOURCED_BANNER)
         else:
             lines.append(VERIFY_BANNER)
     else:

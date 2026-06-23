@@ -35,7 +35,9 @@ Only **Buffalo Link** is fully calibrated (reset 100, ceiling 1800, ~1.7
 heads/spin, ~85% base return, 20-unit feature → neutral break-even ≈ 1347). For
 every other game the **reset and ceiling are reliable**, but **accrual and
 feature payout are estimates** — so their break-evens are placeholders until you
-dial in real floor data. Both front ends flag those games with a verify warning.
+dial in real floor data. Both front ends flag each game with one of three tiers:
+**Calibrated** (floor-validated — Buffalo Link), **Sourced** (constants from
+published AP analysis — e.g. Scarab), or **Estimate** (placeholder, verify it).
 Keep it.
 
 To calibrate the next game you need two numbers off the floor: **accrual** =
