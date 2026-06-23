@@ -38,10 +38,14 @@ is the credit value you can collect off the abandoned machine.
 
 1. Run the script with the user's game, meter, and bet (default bet $5).
 2. Report the verdict, EV/session, break-even, and worst-case loss as given.
-3. **Keep the calibration warning.** If the script prints the `! VERIFY` banner,
-   pass it on — only **Buffalo Link** is fully calibrated. For every other game
-   the reset & ceiling are reliable but accrual & feature payout are estimates,
-   so the break-even is a placeholder until the user dials in real floor numbers.
+3. **Keep the calibration banner.** The script prints one of three tiers — relay
+   whichever it shows:
+   - `* CALIBRATED` — floor-validated constants (only **Buffalo Link**).
+   - `~ SOURCED` — constants from published AP analysis (e.g. **Scarab**); good,
+     but tune base return & bet to the actual machine.
+   - `! VERIFY` — reset & ceiling are reliable but accrual & feature payout are
+     estimates, so the break-even is a placeholder until real floor numbers are
+     dialed in.
 4. If the game is a trap or not-beatable, say so and explain why — don't fish for
    a number that isn't there.
 
