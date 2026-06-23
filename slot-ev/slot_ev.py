@@ -210,6 +210,19 @@ GAMES = [
          note="Classic two-tier MHB layout (one jackpot ~$25 must-hit-by $50, another "
               "~$50 must-hit-by $500). Penny-slow meters. Increment is an estimate - "
               "confirm before trusting EV."),
+    dict(id="ainsworth-mhb",
+         name="Ainsworth Must-Hit-By (Mustang Money / King Carlos / Cash Odyssey)",
+         maker="Ainsworth", type="dollar", grp="Dollar must-hit-by",
+         dcur=400, dceil=500, dinc=1.0, rtp=90,
+         key="coin-in MHB progressives, multiple tiers",
+         note="Ainsworth's mystery progressives are genuine must-hit-bys: a fixed % "
+              "of coin-in feeds the meter and the jackpot is forced before a posted "
+              "ceiling. Read the reset & ceiling off the belly glass and enter both. "
+              "Two cautions: the meter moves SLOWLY on low denominations (a $200 "
+              "must-hit on a 25c game can still be deeply -EV from far away - people "
+              "have buried $30k chasing a $10k that sat at $9,900), and the increment "
+              "% is hidden, so the default is an estimate. Without it, play only the "
+              "top ~10-15% of the reset->ceiling band."),
 
     # ===== BANKING / VULTURE STATE =====
     _bank("ocean-magic", "Ocean Magic / Ocean Magic Grand", "IGT",
@@ -362,7 +375,8 @@ GAMES = [
     _myth("lightning-link", "Lightning Link (standard)",
           "No trackable must-hit-by on the playable tiers. Fast-tapping, "
           "denom-switching, 'it's due' are all myths. Not advantage-playable. "
-          "(Buffalo Link and Scarab Link are the beatable cousins.)"),
+          "(Buffalo Link and the classic Scarab are the beatable cousins - both are "
+          "in this list.)"),
     _myth("dragon-link", "Dragon Link",
           "No must-hit-by thresholds on any version; Major caps at ~2x its start. "
           "Hitting the Major/Grand is pure luck - not advantage-playable."),
@@ -396,6 +410,14 @@ GAMES = [
           "build only during a feature YOU triggered - nothing persists for the next "
           "player. The on-screen 'building' is the trap, not a left-behind vulture "
           "state. Not advantage-playable - same family as Fu Dai Lian Lian."),
+    _myth("wicked-wheel", "Smokin' Hot Stuff Wicked Wheel",
+          "Everi 243-ways with four progressives (Major ~$40, Mega ~$100, Ultra "
+          "~$800, Grand ~$10,000). Looks AP-able because of the wheel and big Grand, "
+          "but the Progressive Pick Bonus is PREDETERMINED - the prize is set before "
+          "you pick, so pick order/timing changes nothing - and it triggers randomly "
+          "with no readable must-hit-by ceiling. Not advantage-playable. (Only worth a "
+          "look as a plain high-progressive +EV bet if a Grand has climbed far above "
+          "its $10k reset, and even then the contribution rate is unknown.)"),
 ]
 
 # ----------------------------------------------------------------------------
