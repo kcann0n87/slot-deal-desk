@@ -99,9 +99,13 @@ GAMES = [
          type="counter", grp="Counter / must-hit-by",
          reset=5, ceil=50, accr=0.4, units=8, rtp=88, trig="mhb",
          key="blue wilds 5->50 - FG 75/100/125",
-         note="Blue-wild counter (base game) resets to 5, MHB 50 - rare above 12, "
-              "becomes strong the higher it climbs. Free-games tiers are MHB too: "
-              "purple 75, green 100, yellow 125. Accrual/feature estimated."),
+         note="Blue-wild counter (base game) resets to 5; the bank of wilds triggers "
+              "RANDOMLY - usually around 8-12 collected, roughly every 20 spins - and "
+              "is guaranteed by 50 (rare above 12; highest seen ~22). So the real read "
+              "is simple: PLAY AT 8+, higher is better. The climb-to-50 break-even "
+              "below is just the hard backstop; this game pays off well before that "
+              "because it fires randomly. Free-games tiers are separate MHB meters "
+              "(purple 75, green 100, yellow 125). a.k.a. Prosperity Pearl."),
     dict(id="golden-beasts", name="Golden Beasts / Golden Elements", maker=None,
          type="counter", grp="Counter / must-hit-by",
          reset=0, ceil=180, accr=1, units=14, rtp=88, trig="mhb",
@@ -225,12 +229,18 @@ GAMES = [
               "top ~10-15% of the reset->ceiling band."),
 
     # ===== BANKING / VULTURE STATE =====
-    _bank("ocean-magic", "Ocean Magic / Ocean Magic Grand", "IGT",
-          "wild bubbles rise 1 row/spin",
-          "Play only when the prior player left wild bubbles in the bottom rows (or "
-          "just below the screen) so they rise into Ocean Magic symbols within a few "
-          "spins. Estimate the credits those near-hits are worth and how many spins "
-          "to cash them."),
+    dict(id="ocean-magic", name="Ocean Magic / Ocean Magic Grand", maker="IGT",
+         type="bank", grp="Banking / vulture state", bspins=3, rtp=96, cal="sourced",
+         key="wild bubbles rise 1 row/spin",
+         note="The most widely hustled banking play (IGT, ~96% base return). Wild "
+              "bubbles rise one row per spin and vanish at the top; the play is "
+              "sitting where the prior player left bubbles still low on the screen, "
+              "about to rise into coin symbols (a bubble landing on an Ocean Magic "
+              "symbol expands to every adjacent spot). It pays LEFT-TO-RIGHT, so "
+              "bubbles stranded in column 5 are near-worthless - ignore them. Estimate "
+              "the credits the near-hit bubbles are worth and the spins to cash them. "
+              "(Grand uses giant bubbles; the 'bubble boost' bet adds bubbles via a "
+              "horn.) Sourced mechanic + RTP; the board value is still what you read."),
     _bank("big-ocean", "Big Ocean Jackpots", None, "jackpot/wild bubbles rise 1/spin",
           "Like Ocean Magic but with jackpot bubbles. Rich state = a jackpot or wild "
           "bubble one or two rows below a coin symbol. Value the imminent hit vs "
