@@ -388,6 +388,14 @@ GAMES = [
           "persists for the next player. Do not confuse it with the classic 3-reel "
           "Piggy Bankin', which IS an advantage play (see the 'Piggy Bankin' classic "
           "3-reel' entry)."),
+    _myth("bao-zhu-zhao-fu", "Bao Zhu Zhao Fu Blast",
+          "Aristocrat hold-and-spin game (Asian Festival series, built from Mighty "
+          "Cash Ultra + Fu Dai Lian Lian) with a 'Blast' wheel. Three hold-and-spin "
+          "styles (Ultra / Double Up / Extra Spins) and four jackpots, but every "
+          "trigger is RANDOM, the jackpots are flat / not must-hit-by, and the coins "
+          "build only during a feature YOU triggered - nothing persists for the next "
+          "player. The on-screen 'building' is the trap, not a left-behind vulture "
+          "state. Not advantage-playable - same family as Fu Dai Lian Lian."),
 ]
 
 # ----------------------------------------------------------------------------
