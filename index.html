@@ -139,6 +139,23 @@
   .filter{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}
   .filter input{flex:1; min-width:160px}
 
+  /* tappable reference rows */
+  .tbl tbody tr{cursor:pointer}
+  .tbl tbody tr:hover{background:rgba(63,208,127,.05)}
+  .tbl tbody tr:active{background:rgba(63,208,127,.10)}
+
+  /* EV popup (modal) opened from the reference table */
+  .modal[hidden]{display:none}
+  .modal{position:fixed; inset:0; z-index:100; display:flex; align-items:flex-end; justify-content:center}
+  .modal-backdrop{position:absolute; inset:0; background:rgba(4,8,7,.66)}
+  .modal-panel{position:relative; z-index:1; width:100%; max-width:560px; max-height:92vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; padding:10px 12px 22px; animation:popUp .18s ease}
+  @media (min-width:560px){ .modal{align-items:center} }
+  .modal-close{display:block; margin:0 0 6px auto; width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--line); background:#0b1310; color:var(--muted); font-size:15px; line-height:1; cursor:pointer}
+  .modal-close:hover{color:var(--text)}
+  @keyframes popUp{ from{transform:translateY(16px); opacity:.4} to{transform:none; opacity:1} }
+
   footer{margin-top:26px; font-size:11px; color:var(--faint); line-height:1.6}
   footer b{color:var(--muted)}
   a{color:var(--gold)}
@@ -176,7 +193,8 @@
   <div class="note" id="gameNote" style="margin-top:12px"></div>
 </div>
 
-<!-- VERDICT -->
+<!-- VERDICT (calcWrap is relocated into the popup when a reference row is tapped) -->
+<div id="calcWrap">
 <div class="card" id="calcCard">
   <div class="verdict pass" id="verdict">
     <div class="v-row">
@@ -269,6 +287,8 @@
   </div>
   <div class="note" id="iNote" style="margin-top:14px"></div>
 </div>
+</div><!-- /calcWrap -->
+<div id="calcAnchor"></div>
 
 <!-- REFERENCE -->
 <h2 class="sec">Full machine reference</h2>
@@ -276,6 +296,7 @@
   <div class="filter">
     <input type="search" id="search" placeholder="Filter machines…" aria-label="Filter machines">
   </div>
+  <div class="hint" style="margin:-2px 0 10px">Tap any row to pop up its EV calculator and sliders.</div>
   <div style="overflow-x:auto">
     <table class="tbl">
       <thead><tr><th>Machine</th><th>Type</th><th>Key numbers</th></tr></thead>
@@ -289,6 +310,15 @@
   <p><b>Trust the structure, verify the constants.</b> Resets and ceilings here are the hard-to-find facts and are reliable. Only <b>Buffalo Link</b> ships fully calibrated (1.7 heads/spin, ~85% base return, 20–30 unit feature). For every other game the accrual and feature values load as <span class="est">estimates</span> — dial them to the real machine or a verified guide before trusting the number.</p>
   <p><b>Reality check.</b> +EV is a long-run average; individual sessions swing hard and the feature often pays near zero. Need a bankroll that absorbs it, and the good states get locked up fast by other players. If a session drifts from "playing only +EV states" into "playing because I'm here," that's the stop-loss — walk. For informational use; verify every number yourself.</p>
 </footer>
+
+<!-- EV popup host for reference-table picks -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="modal-panel" id="modalPanel" role="dialog" aria-modal="true" aria-label="Machine EV calculator">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <div id="modalSlot"></div>
+  </div>
+</div>
 
 <script>
 const GAMES = [
@@ -474,6 +504,8 @@ const GAMES = [
     'Aristocrat hold-and-spin Link game (Mo’ Mummy family, Baron Portrait cabinet) with Go Yeti / Vault free-spins. Mini & minor jackpots are FIXED by denom; Grand/Major are standard random progressives, NOT must-hit-by, and the hold-and-spin coins do not persist for the next player. No trackable guaranteed trigger to exploit — same bucket as Lightning Link. If the glass actually shows a ‘MUST HIT BY’ ceiling on the Major/Grand, that one jackpot becomes a dollar-MHB play — send the reset & ceiling and I’ll add it.'),
   myth('lock-it-piggy','Lock It Link: Piggy Bankin’ / Piggy N’ More Bankin’',
     'The MODERN linked hold-and-spin version (big GRAND/MAJOR progressives — what you most often see now) — NOT the classic play. Piggy banks lock in place and break open during free spins for credit prizes, but the trigger is random, the linked progressives are not must-hit-by, and nothing persists for the next player. Do not confuse it with the classic 3-reel Piggy Bankin’, which IS an advantage play (see the “Piggy Bankin’ (classic 3-reel)” entry).'),
+  myth('bao-zhu-zhao-fu','Bao Zhu Zhao Fu Blast',
+    'Aristocrat hold-and-spin game (Asian Festival series, built from Mighty Cash Ultra + Fu Dai Lian Lian) with a ‘Blast’ wheel. Three hold-and-spin styles (Ultra / Double Up / Extra Spins) and four jackpots, but every trigger is RANDOM, the jackpots are flat / not must-hit-by, and coins build only during a feature YOU triggered — nothing persists for the next player. The on-screen “building” is the trap, not a left-behind vulture state. Not advantage-playable — same family as Fu Dai Lian Lian.'),
 ];
 
 function bank(id,name,maker,key,note){return {id,name,maker:maker||null,type:'bank',grp:'Banking / vulture state',bspins:3,rtp:88,key,note};}
@@ -674,17 +706,34 @@ function buildRef(){
   const tb=$('refBody');
   const pillCls={counter:'c',dollar:'d',bank:'b',trap:'t',notbeatable:'x'};
   const pillTxt={counter:'counter',dollar:'$ MHB',bank:'banking',trap:'trap',notbeatable:'not beatable'};
-  GAMES.forEach((g)=>{
+  GAMES.forEach((g,i)=>{
     const tr=document.createElement('tr');
+    tr.dataset.i=i;
     tr.innerHTML=`<td><span class="g">${g.name}</span>${g.maker?`<br><span style="color:var(--faint);font-size:11px">${g.maker}</span>`:''}</td>
       <td><span class="pill ${pillCls[g.type]}">${pillTxt[g.type]}</span></td>
       <td class="num">${g.key}</td>`;
     tb.appendChild(tr);
   });
+  tb.addEventListener('click',e=>{
+    const tr=e.target.closest('tr'); if(!tr || tr.dataset.i==null) return;
+    cur=GAMES[+tr.dataset.i]; loadGame(); openModal();
+  });
   $('search').addEventListener('input',e=>{
     const q=e.target.value.toLowerCase();
     [...tb.children].forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q)?'':'none'; });
   });
+}
+
+// relocate the calculator into a popup (and back) so a tapped reference row
+// opens the real EV card — slider and all inputs included
+function openModal(){
+  $('modalSlot').appendChild($('calcWrap'));
+  $('modal').hidden=false; document.body.style.overflow='hidden';
+  const p=$('modalPanel'); if(p) p.scrollTop=0;
+}
+function closeModal(){
+  const anchor=$('calcAnchor'); anchor.parentNode.insertBefore($('calcWrap'),anchor);
+  $('modal').hidden=true; document.body.style.overflow='';
 }
 
 // wire inputs
@@ -695,6 +744,9 @@ $('stateRange').addEventListener('input',e=>{ $('stateNum').value=e.target.value
 
 buildPicker();
 buildRef();
+$('modalClose').addEventListener('click', closeModal);
+$('modalBackdrop').addEventListener('click', closeModal);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !$('modal').hidden) closeModal(); });
 loadGame();
 </script>
 </body>
