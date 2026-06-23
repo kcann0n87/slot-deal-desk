@@ -413,6 +413,10 @@ const GAMES = [
    dcur:35, dceil:50, dinc:0.6, rtp:90,
    key:'e.g. $25→$50 and $50→$500',
    note:'Classic two-tier MHB layout (one jackpot ~$25 must-hit-by $50, another ~$50 must-hit-by $500). Penny-slow meters. Increment is an <span class="est">estimate</span> — confirm before trusting EV.'},
+  {id:'ainsworth-mhb', name:'Ainsworth Must-Hit-By (Mustang Money / King Carlos / Cash Odyssey)', maker:'Ainsworth', type:'dollar', grp:'Dollar must-hit-by',
+   dcur:400, dceil:500, dinc:1.0, rtp:90,
+   key:'coin-in MHB progressives, multiple tiers',
+   note:'Ainsworth’s mystery progressives are genuine must-hit-bys: a fixed % of coin-in feeds the meter and the jackpot is forced before a posted ceiling. Read the reset & ceiling off the belly glass and enter both. Two cautions: the meter moves SLOWLY on low denominations (a $200 must-hit on a 25¢ game can still be deeply -EV from far away — people have buried $30k chasing a $10k that sat at $9,900), and the increment % is hidden, so the default is an <span class="est">estimate</span>. Without it, play only the top ~10–15% of the reset→ceiling band.'},
 
   // ===== BANKING / VULTURE STATE =====
   bank('ocean-magic','Ocean Magic / Ocean Magic Grand','IGT','wild bubbles rise 1 row/spin',
@@ -493,7 +497,7 @@ const GAMES = [
 
   // ===== NOT BEATABLE (myth-buster) =====
   myth('lightning-link','Lightning Link (standard)',
-    'No trackable must-hit-by on the playable tiers. Fast-tapping, denom-switching, "it\u2019s due" are all myths. Not advantage-playable. (Buffalo Link and Scarab Link are the beatable cousins.)'),
+    'No trackable must-hit-by on the playable tiers. Fast-tapping, denom-switching, "it\u2019s due" are all myths. Not advantage-playable. (Buffalo Link and the classic Scarab are the beatable cousins \u2014 both are in this list.)'),
   myth('dragon-link','Dragon Link',
     'No must-hit-by thresholds on any version; Major caps at ~2× its start. Hitting the Major/Grand is pure luck — not advantage-playable.'),
   myth('dollar-storm','Dollar Storm',
@@ -506,6 +510,8 @@ const GAMES = [
     'The MODERN linked hold-and-spin version (big GRAND/MAJOR progressives — what you most often see now) — NOT the classic play. Piggy banks lock in place and break open during free spins for credit prizes, but the trigger is random, the linked progressives are not must-hit-by, and nothing persists for the next player. Do not confuse it with the classic 3-reel Piggy Bankin’, which IS an advantage play (see the “Piggy Bankin’ (classic 3-reel)” entry).'),
   myth('bao-zhu-zhao-fu','Bao Zhu Zhao Fu Blast',
     'Aristocrat hold-and-spin game (Asian Festival series, built from Mighty Cash Ultra + Fu Dai Lian Lian) with a ‘Blast’ wheel. Three hold-and-spin styles (Ultra / Double Up / Extra Spins) and four jackpots, but every trigger is RANDOM, the jackpots are flat / not must-hit-by, and coins build only during a feature YOU triggered — nothing persists for the next player. The on-screen “building” is the trap, not a left-behind vulture state. Not advantage-playable — same family as Fu Dai Lian Lian.'),
+  myth('wicked-wheel','Smokin’ Hot Stuff Wicked Wheel',
+    'Everi 243-ways with four progressives (Major ~$40, Mega ~$100, Ultra ~$800, Grand ~$10,000). Looks AP-able because of the wheel and the big Grand, but the Progressive Pick Bonus is PREDETERMINED — the prize is set before you pick, so pick order/timing changes nothing — and it triggers randomly with no readable must-hit-by ceiling. Not advantage-playable. (Only worth a look as a plain high-progressive bet if a Grand has climbed far above its $10k reset, and even then the contribution rate is unknown.)'),
 ];
 
 function bank(id,name,maker,key,note){return {id,name,maker:maker||null,type:'bank',grp:'Banking / vulture state',bspins:3,rtp:88,key,note};}
@@ -741,6 +747,9 @@ function closeModal(){
   document.addEventListener('input',e=>{ if(e.target && e.target.id===id) { if(id==='stateNum'){$('stateRange').value=e.target.value;} recompute(); } });
 });
 $('stateRange').addEventListener('input',e=>{ $('stateNum').value=e.target.value; recompute(); });
+// remember the player's bet across reloads (floor convenience)
+document.addEventListener('input',e=>{ if(e.target && e.target.id==='betN'){ try{ localStorage.setItem('sdd_bet', e.target.value); }catch(_){} } });
+try{ const sb=localStorage.getItem('sdd_bet'); if(sb!==null && sb!=='' && $('betN')) $('betN').value=sb; }catch(_){}
 
 buildPicker();
 buildRef();
