@@ -425,6 +425,14 @@ GAMES = [
           "If the glass actually shows a 'MUST HIT BY' ceiling on the Major/Grand, "
           "that one jackpot becomes a dollar-MHB play - send the reset & ceiling and "
           "I'll add it."),
+    _myth("mo-mummy", "Mo Mo Mo' Mummy",
+          "Aristocrat hold-and-spin / Cash Collect game - the BASE of the Mo' Mummy "
+          "family that Spooky Link belongs to (same not-beatable bucket). Mini & minor "
+          "jackpots are FIXED by denom; Major/Grand are standard random progressives; "
+          "the Jackpot feature is a random-triggered pick (match 3-of-a-kind from 15); "
+          "and Cash Collect coins do not persist for the next player. ~94% RTP. No "
+          "trackable must-hit-by or left-behind state to exploit - not "
+          "advantage-playable. (A high Grand is still random, not a play.)"),
     _myth("lock-it-piggy", "Lock It Link: Piggy Bankin' / Piggy N' More Bankin'",
           "The MODERN linked hold-and-spin version (big GRAND/MAJOR progressives - "
           "what you most often see now) - NOT the classic play. Piggy banks lock in "
