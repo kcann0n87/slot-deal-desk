@@ -232,6 +232,18 @@
       </div>
     </div>
 
+    <!-- bet & base return: the most-changed inputs, kept at the top -->
+    <div class="grid2">
+      <div class="field">
+        <label class="lbl" for="betN">Bet / spin ($)</label>
+        <input type="number" id="betN" class="mono" step="0.5" value="5">
+      </div>
+      <div class="field">
+        <label class="lbl" for="rtpN">Base-game return (%)</label>
+        <input type="number" id="rtpN" class="mono" step="1" value="85">
+      </div>
+    </div>
+
     <div class="grid2">
       <!-- COUNTER group -->
       <div class="field grp grp-counter">
@@ -265,16 +277,6 @@
       <div class="field grp grp-bank">
         <label class="lbl" for="bSpins">Spins to collect</label>
         <input type="number" id="bSpins" class="mono">
-      </div>
-
-      <!-- SHARED -->
-      <div class="field">
-        <label class="lbl" for="betN">Bet / spin ($)</label>
-        <input type="number" id="betN" class="mono" step="0.5" value="5">
-      </div>
-      <div class="field">
-        <label class="lbl" for="rtpN">Base-game return (%)</label>
-        <input type="number" id="rtpN" class="mono" step="1" value="85">
       </div>
     </div>
     <div class="hint" id="calcHint"></div>
@@ -423,6 +425,9 @@ const GAMES = [
   {id:'ocean-magic', name:'Ocean Magic / Ocean Magic Grand', maker:'IGT', type:'bank', grp:'Banking / vulture state', bspins:3, rtp:96, cal:'sourced',
    key:'wild bubbles rise 1 row/spin',
    note:'The most widely hustled banking play (IGT, ~96% base return). Wild bubbles rise one row per spin and vanish at the top; the play is sitting where the prior player left bubbles still low on the screen, about to rise into coin symbols (a bubble landing on an Ocean Magic symbol expands to every adjacent spot). It pays LEFT-TO-RIGHT, so bubbles stranded in column 5 are near-worthless — ignore them. Estimate the credits the near-hit bubbles are worth and the spins to cash them. (Grand uses giant bubbles; the “bubble boost” bet adds bubbles via a horn.) <span class="est">Sourced mechanic + RTP</span>; the board value is still what you read.'},
+  {id:'buffalo-ascension', name:'Buffalo Ascension', maker:'Aristocrat', type:'bank', grp:'Banking / vulture state', bspins:5, rtp:92, cal:'sourced',
+   key:'reels grow 4→7; play at 3,136+ ways',
+   note:'The genuinely beatable Buffalo — a reel-growth vulture play (Aristocrat; NOT the Stampede / Link hold-and-spins). The three MIDDLE reels (2,3,4) grow from 4 symbols tall up to 7 as arrow symbols land, and that height PERSISTS for the next player. Each grown reel has a prize above it; an arrow on a 7-tall reel triggers that prize, and reel 3’s prize is the SUPER STAMPEDE (the best). More height = more ways to win = closer to a bonus. The read is one number on the glass: <b>WAYS TO WIN — play at 3,136+</b> (base 1,024, max 5,488), ideally with reel 3 at/near 7. Near base = walk. The progressive Grand is NOT the edge; the grown reels are. Enter the bonus value you expect and spins to trigger. <span class="est">Sourced mechanic + threshold</span>.'},
   bank('big-ocean','Big Ocean Jackpots',null,'jackpot/wild bubbles rise 1/spin',
     'Like Ocean Magic but with jackpot bubbles. Rich state = a jackpot or wild bubble one or two rows below a coin symbol. Value the imminent hit vs spins to reach it.'),
   bank('pillars','Pillars of Cash: Celestial / Festive Fortune',null,'tall pillars + gold dragon',

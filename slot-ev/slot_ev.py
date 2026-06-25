@@ -241,6 +241,20 @@ GAMES = [
               "the credits the near-hit bubbles are worth and the spins to cash them. "
               "(Grand uses giant bubbles; the 'bubble boost' bet adds bubbles via a "
               "horn.) Sourced mechanic + RTP; the board value is still what you read."),
+    dict(id="buffalo-ascension", name="Buffalo Ascension", maker="Aristocrat",
+         type="bank", grp="Banking / vulture state", bspins=5, rtp=92, cal="sourced",
+         key="reels grow 4->7; play at 3,136+ ways",
+         note="The genuinely beatable Buffalo - a reel-growth vulture play "
+              "(Aristocrat; NOT the Stampede / Link hold-and-spins). The three MIDDLE "
+              "reels (2,3,4) grow from 4 symbols tall up to 7 as arrow symbols land, "
+              "and that height PERSISTS for the next player. Each grown reel has a "
+              "prize above it; an arrow on a 7-tall reel triggers that prize, and reel "
+              "3's prize is the SUPER STAMPEDE (the best). More height = more ways to "
+              "win = closer to a bonus. The read is one number on the glass: WAYS TO "
+              "WIN - PLAY AT 3,136+ (base 1,024, max 5,488), ideally with reel 3 at or "
+              "near 7. Near base = walk. The progressive Grand is NOT the edge; the "
+              "grown reels are. Enter the bonus value you expect and spins to trigger. "
+              "Sourced mechanic + threshold."),
     _bank("big-ocean", "Big Ocean Jackpots", None, "jackpot/wild bubbles rise 1/spin",
           "Like Ocean Magic but with jackpot bubbles. Rich state = a jackpot or wild "
           "bubble one or two rows below a coin symbol. Value the imminent hit vs "
